@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Key, Mail, User, Lock, CheckCircle2, UserCheck, ShieldAlert, Zap, LogOut } from 'lucide-react';
+import { Key, Mail, User, Lock, CheckCircle2, UserCheck, ShieldAlert, LogOut } from 'lucide-react';
 import { handleApiCall } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import { useLog } from '../context/LogContext';
@@ -61,13 +61,6 @@ export const AuthPage = ({ onAuthSuccess, isAdminMode = false }) => {
     }
   };
 
-  const handleDirectAdminLogin = () => {
-    const adminUser = { fullName: 'Chief Administrator', email: 'admin@amany.com' };
-    loginUser(`token_admin_${Date.now()}`, adminUser, 'ADMIN');
-    addToast('Logged in as Store Administrator!', 'success');
-    if (onAuthSuccess) onAuthSuccess('inventory');
-  };
-
   return (
     <div className="max-w-md mx-auto py-16 animate-fade-in">
       <div className="text-center mb-10">
@@ -119,25 +112,6 @@ export const AuthPage = ({ onAuthSuccess, isAdminMode = false }) => {
         </div>
       ) : (
         <div className="space-y-6">
-          {isAdminMode && (
-            <div className="p-4 bg-gray-100 border-l-4 border-black mb-6">
-              <div className="flex justify-between items-center">
-                <div>
-                  <span className="font-bold text-xs text-black uppercase tracking-wider block">Quick Access</span>
-                  <span className="text-xs text-gray-600 font-medium mt-1 block">Instant login as Chief Admin</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleDirectAdminLogin}
-                  className="px-4 py-2 bg-black text-white text-xs font-bold uppercase tracking-wider hover:bg-gray-800 transition-colors flex items-center gap-2"
-                >
-                  <Zap className="w-3.5 h-3.5" />
-                  1-Click Sign In
-                </button>
-              </div>
-            </div>
-          )}
-
           <form onSubmit={handleSubmit} className="space-y-5">
             {!isAdminMode && isRegisterMode && (
               <div>
