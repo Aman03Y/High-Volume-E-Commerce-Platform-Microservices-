@@ -3,9 +3,16 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [token, setToken] = useState(localStorage.getItem('auth_token') || null);
-  const [user, setUser] = useState(JSON.parse(localStorage.getItem('auth_user') || 'null'));
-  const [role, setRoleState] = useState(localStorage.getItem('auth_role') || 'CUSTOMER'); // 'CUSTOMER' | 'ADMIN'
+  const [token, setToken] = useState(() => localStorage.getItem('auth_token') || null);
+  const [user, setUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('auth_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [role, setRole] = useState(() => localStorage.getItem('auth_role') || 'CUSTOMER');
 
   useEffect(() => {
     if (token) {
@@ -24,30 +31,55 @@ export const AuthProvider = ({ children }) => {
   }, [user]);
 
   useEffect(() => {
-    localStorage.setItem('auth_role', role);
+    if (role) {
+      localStorage.setItem('auth_role', role);
+    } else {
+      localStorage.removeItem('auth_role');
+    }
   }, [role]);
 
-  const loginUser = (jwtToken, userDetails, assignedRole = 'CUSTOMER') => {
-    setToken(jwtToken);
+  const loginUser = (jwtToken, userDetails, requestedRole = null) => {
+    // Auto-detect role: If explicitly ADMIN or email contains 'admin', set role to ADMIN
+    const email = userDetails?.email?.toLowerCase() || '';
+    const assignedRole = requestedRole === 'ADMIN' || email.includes('admin') ? 'ADMIN' : (requestedRole || 'CUSTOMER');
+
+    setToken(jwtToken || `token_${Date.now()}`);
     setUser(userDetails);
-    setRoleState(assignedRole);
+    setRole(assignedRole);
   };
 
   const logoutUser = () => {
     setToken(null);
     setUser(null);
-    setRoleState('CUSTOMER');
+    setRole('CUSTOMER');
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('auth_user');
+    localStorage.removeItem('auth_role');
   };
 
-  const switchRole = (newRole) => {
-    setRoleState(newRole);
-  };
+  const isAdmin = user !== null && (role === 'ADMIN' || (user?.email && user.email.toLowerCase().includes('admin')));
 
   return (
-    <AuthContext.Provider value={{ token, user, role, setRole: switchRole, loginUser, logoutUser }}>
+    <AuthContext.Provider
+      value={{
+        token,
+        user,
+        role,
+        isAdmin,
+        isAuthenticated: !!user,
+        loginUser,
+        logoutUser,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};

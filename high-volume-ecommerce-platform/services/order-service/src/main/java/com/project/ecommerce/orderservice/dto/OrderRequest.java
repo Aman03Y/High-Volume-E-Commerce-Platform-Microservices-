@@ -1,7 +1,10 @@
 package com.project.ecommerce.orderservice.dto;
 
+import com.project.ecommerce.orderservice.entity.OrderStatus;
+
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import java.math.BigDecimal;
 import lombok.*;
 
 @Getter
@@ -20,4 +23,16 @@ public class OrderRequest {
     @NotNull
     @Min(1)
     private Integer quantity;
+
+    private BigDecimal totalPrice;
+
+    private String name;
+
+    private String address;
+
+    private String phoneNumber;
+
+    private String paymentMethod;
+
+    private OrderStatus status;
 }

@@ -34,6 +34,7 @@ public class Product {
     @Column(nullable = false)
     private String category;
 
+    @Column(columnDefinition = "TEXT")
     private String imageUrl;
 
     private LocalDateTime createAt;

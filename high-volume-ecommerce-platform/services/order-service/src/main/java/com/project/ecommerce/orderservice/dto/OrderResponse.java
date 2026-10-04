@@ -26,6 +26,16 @@ public class OrderResponse {
 
     private OrderStatus status;
 
+    private String name;
+
+    private String address;
+
+    private String phoneNumber;
+
+    private String paymentMethod;
+
+    private String paymentStatus;
+
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;

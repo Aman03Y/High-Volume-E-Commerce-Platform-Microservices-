@@ -1,65 +1,62 @@
-import React from 'react';
-import { Package, Shield, Layers, ShoppingBag, Terminal, UserCheck, ShieldAlert, User } from 'lucide-react';
-import { useLog } from '../context/LogContext';
+import React, { useState } from 'react';
+import { Package, ShoppingBag, Layers, ShoppingCart, User, LogOut, ShieldCheck, ChevronDown, Menu, X, Sparkles, Lock } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 
 export const Navbar = ({ activeTab, setActiveTab }) => {
-  const { logs, isConsoleOpen, setIsConsoleOpen } = useLog();
-  const { user, role, setRole, logoutUser } = useAuth();
+  const { user, isAdmin, isAuthenticated, logoutUser } = useAuth();
+  const { totalItemsCount, setIsCartOpen } = useCart();
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const isAdmin = role === 'ADMIN';
-
-  // Navigation Items according to Role
   const navItems = [
-    { id: 'products', label: 'Products', service: 'product-service', icon: Package, show: true },
-    { id: 'inventory', label: 'Inventory (Admin)', service: 'inventory-service', icon: Layers, show: isAdmin },
-    { id: 'orders', label: isAdmin ? 'All Orders' : 'My Orders', service: 'order-service', icon: ShoppingBag, show: true },
-    { id: 'auth', label: 'Auth & Profile', service: 'auth-service', icon: Shield, show: true },
+    { id: 'products', label: 'Store Catalog', icon: Package, show: true },
+    { id: 'orders', label: isAdmin ? 'Manage Orders' : 'My Orders', icon: ShoppingBag, show: true },
+    { id: 'inventory', label: 'Inventory (Admin)', icon: Layers, show: isAdmin },
   ].filter((item) => item.show);
 
+  const handleNavClick = (tabId) => {
+    setActiveTab(tabId);
+    setIsMobileMenuOpen(false);
+  };
+
   return (
-    <header className="sticky top-0 z-30 bg-white border-b border-slate-200 shadow-xs">
+    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs transition-all">
+      {/* Top Notification Announcement Bar */}
+      <div className="bg-black text-white text-[11px] py-2 px-4 text-center font-bold tracking-widest uppercase flex items-center justify-center gap-2">
+        <span>Free Shipping & 30-Day Returns</span>
+      </div>
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-16 gap-4">
           
-          {/* Logo & Title */}
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center font-bold text-lg shadow-sm">
-              ⚡
-            </div>
+          {/* Logo */}
+          <div
+            className="flex items-center gap-3 cursor-pointer group"
+            onClick={() => handleNavClick('products')}
+          >
             <div>
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-slate-900 tracking-tight text-lg">AmanY</span>
-                <span
-                  className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-extrabold ${
-                    isAdmin
-                      ? 'bg-purple-100 text-purple-800 border border-purple-300'
-                      : 'bg-blue-50 text-blue-700 border border-blue-200'
-                  }`}
-                >
-                  {isAdmin ? 'ADMIN PANEL' : 'CUSTOMER STORE'}
-                </span>
+              <div className="flex items-center gap-1.5">
+                <span className="font-black text-black tracking-tighter text-2xl uppercase">AmanY</span>
               </div>
-              <p className="text-xs text-slate-500 font-medium">Gateway: localhost:8080</p>
             </div>
           </div>
 
-          {/* Microservices Navigation */}
-          <nav className="hidden md:flex space-x-1 bg-slate-100/70 p-1.5 rounded-xl border border-slate-200/80">
+          {/* Desktop Nav Links */}
+          <nav className="hidden md:flex items-center space-x-1">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
               return (
                 <button
                   key={item.id}
-                  onClick={() => setActiveTab(item.id)}
-                  className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                  onClick={() => handleNavClick(item.id)}
+                  className={`flex items-center gap-2 px-4 py-2 text-xs font-bold transition-all uppercase tracking-wider ${
                     isActive
-                      ? 'bg-white text-slate-900 shadow-xs border border-slate-200/60'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
+                      ? 'text-black border-b-2 border-black'
+                      : 'text-gray-500 hover:text-black'
                   }`}
                 >
-                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-blue-600' : 'text-slate-400'}`} />
                   {item.label}
                 </button>
               );
@@ -69,97 +66,139 @@ export const Navbar = ({ activeTab, setActiveTab }) => {
           {/* Right Action Bar */}
           <div className="flex items-center gap-3">
             
-            {/* Quick Role Switcher Pill */}
-            <div className="flex items-center bg-slate-100 p-1 rounded-lg border border-slate-200">
-              <button
-                onClick={() => setRole('CUSTOMER')}
-                className={`px-2.5 py-1 rounded text-[11px] font-bold transition-all flex items-center gap-1 ${
-                  !isAdmin
-                    ? 'bg-white text-blue-700 shadow-xs'
-                    : 'text-slate-500 hover:text-slate-800'
-                }`}
-                title="Switch to Customer Mode"
-              >
-                <User className="w-3 h-3" />
-                Customer
-              </button>
-              <button
-                onClick={() => setRole('ADMIN')}
-                className={`px-2.5 py-1 rounded text-[11px] font-bold transition-all flex items-center gap-1 ${
-                  isAdmin
-                    ? 'bg-purple-900 text-white shadow-xs'
-                    : 'text-slate-500 hover:text-slate-800'
-                }`}
-                title="Switch to Admin Mode"
-              >
-                <ShieldAlert className="w-3 h-3 text-purple-300" />
-                Admin
-              </button>
-            </div>
-
-            {/* Live API Console Toggle Button */}
+            {/* Shopping Cart Button */}
             <button
-              onClick={() => setIsConsoleOpen(!isConsoleOpen)}
-              className={`relative flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
-                isConsoleOpen
-                  ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
-                  : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50 hover:border-slate-400'
-              }`}
-              title="Toggle Live Backend HTTP Console"
+              onClick={() => setIsCartOpen(true)}
+              className="relative flex items-center gap-2 px-3 py-2 text-black transition-colors font-bold text-xs uppercase"
+              title="View Shopping Cart"
             >
-              <Terminal className="w-4 h-4 text-emerald-400" />
-              <span className="hidden sm:inline font-mono">API Inspector</span>
-              {logs.length > 0 && (
-                <span className="inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold leading-none text-blue-700 bg-blue-100 rounded-full">
-                  {logs.length}
+              <ShoppingCart className="w-5 h-5" />
+              {totalItemsCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-black text-white font-mono text-[10px] font-black w-4 h-4 flex items-center justify-center rounded-full">
+                  {totalItemsCount}
                 </span>
               )}
             </button>
 
-            {/* User Profile Badge */}
-            {user ? (
-              <div className="flex items-center gap-2 pl-2 border-l border-slate-200">
-                <div className="w-7 h-7 rounded-full bg-slate-200 border border-slate-300 text-slate-700 flex items-center justify-center font-bold text-xs">
-                  {user.fullName ? user.fullName[0].toUpperCase() : 'U'}
-                </div>
+            {/* User Account / Profile Dropdown */}
+            {isAuthenticated ? (
+              <div className="relative">
                 <button
-                  onClick={logoutUser}
-                  className="text-xs text-slate-500 hover:text-rose-600 font-medium underline underline-offset-2"
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                  className="flex items-center gap-2 p-1.5 pl-2.5 rounded-xl border border-slate-200 hover:border-slate-300 bg-white transition-all shadow-xs"
                 >
-                  Logout
+                  <div
+                    className={`w-7 h-7 rounded-full text-white font-black flex items-center justify-center text-xs bg-black`}
+                  >
+                    {user.fullName ? user.fullName[0].toUpperCase() : 'U'}
+                  </div>
+                  <div className="hidden sm:block text-left">
+                    <div className="text-xs font-bold text-slate-900 leading-tight truncate max-w-[110px]">
+                      {user.fullName || 'User'}
+                    </div>
+                    <div className="text-[10px] font-semibold text-slate-500 capitalize">
+                      {isAdmin ? 'Store Admin' : 'Customer'}
+                    </div>
+                  </div>
+                  <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
                 </button>
+
+                {/* Dropdown Menu */}
+                {isUserMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-52 bg-white rounded-2xl border border-slate-200 shadow-xl py-2 z-50 animate-fade-in text-xs font-medium">
+                    <div className="px-4 py-2 border-b border-slate-100">
+                      <p className="font-bold text-slate-900 truncate">{user.fullName || 'User Account'}</p>
+                      <p className="text-[11px] text-slate-500 font-mono truncate">{user.email}</p>
+                      <span
+                        className={`inline-block mt-1 text-[10px] font-black px-2 py-0.5 rounded-md uppercase ${
+                          isAdmin ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800'
+                        }`}
+                      >
+                        {isAdmin ? 'Administrator' : 'Customer Account'}
+                      </span>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        handleNavClick('orders');
+                        setIsUserMenuOpen(false);
+                      }}
+                      className="w-full text-left px-4 py-2 text-slate-700 hover:bg-slate-50 flex items-center gap-2"
+                    >
+                      <ShoppingBag className="w-4 h-4 text-slate-400" />
+                      {isAdmin ? 'Manage All Orders' : 'My Orders & Invoices'}
+                    </button>
+
+                    {isAdmin && (
+                      <button
+                        onClick={() => {
+                          handleNavClick('inventory');
+                          setIsUserMenuOpen(false);
+                        }}
+                        className="w-full text-left px-4 py-2 text-purple-700 hover:bg-purple-50 flex items-center gap-2 font-bold"
+                      >
+                        <Layers className="w-4 h-4 text-purple-500" />
+                        Inventory Dashboard
+                      </button>
+                    )}
+
+                    <div className="border-t border-slate-100 my-1" />
+
+                    <button
+                      onClick={() => {
+                        logoutUser();
+                        setIsUserMenuOpen(false);
+                        setActiveTab('products');
+                      }}
+                      className="w-full text-left px-4 py-2 text-rose-600 hover:bg-rose-50 flex items-center gap-2 font-semibold"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Sign Out
+                    </button>
+                  </div>
+                )}
               </div>
             ) : (
               <button
-                onClick={() => setActiveTab('auth')}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-xs transition-colors"
+                onClick={() => handleNavClick('auth')}
+                className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-black hover:bg-gray-800 rounded-none transition-colors uppercase tracking-wider"
               >
-                <UserCheck className="w-3.5 h-3.5" />
+                <User className="w-3.5 h-3.5" />
                 Sign In
               </button>
             )}
+
+            {/* Mobile Menu Toggle */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="p-2 md:hidden text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100"
+            >
+              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
           </div>
         </div>
 
-        {/* Mobile Nav items */}
-        <div className="flex md:hidden overflow-x-auto py-2 gap-1 border-t border-slate-100">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeTab === item.id;
-            return (
-              <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id)}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium whitespace-nowrap ${
-                  isActive ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600'
-                }`}
-              >
-                <Icon className="w-3.5 h-3.5" />
-                {item.label}
-              </button>
-            );
-          })}
-        </div>
+        {/* Mobile Navigation Drawer */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden py-3 border-t border-slate-100 space-y-1 animate-fade-in">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => handleNavClick(item.id)}
+                  className={`w-full flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-bold ${
+                    isActive ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-100'
+                  }`}
+                >
+                  <Icon className="w-4 h-4" />
+                  {item.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
     </header>
   );

@@ -23,7 +23,15 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderResponse createOrder(OrderRequest request) {
 
-        BigDecimal totalPrice = BigDecimal.valueOf(request.getQuantity() * 1000);
+        BigDecimal totalPrice = request.getTotalPrice() != null ? request.getTotalPrice() : BigDecimal.valueOf(request.getQuantity() * 1000);
+
+        String paymentStatus = "Payment Pending";
+        if (request.getPaymentMethod() != null) {
+            String method = request.getPaymentMethod().toLowerCase();
+            if (method.contains("upi") || method.contains("card")) {
+                paymentStatus = "Payment Successful";
+            }
+        }
 
         Order order = Order.builder()
                 .customerId(request.getCustomerId())
@@ -31,6 +39,11 @@ public class OrderServiceImpl implements OrderService {
                 .quantity(request.getQuantity())
                 .totalPrice(totalPrice)
                 .status(OrderStatus.PENDING)
+                .name(request.getName())
+                .address(request.getAddress())
+                .phoneNumber(request.getPhoneNumber())
+                .paymentMethod(request.getPaymentMethod())
+                .paymentStatus(paymentStatus)
                 .build();
 
         Order savedOrder = orderRepository.save(order);
@@ -67,7 +80,24 @@ public class OrderServiceImpl implements OrderService {
         order.setCustomerId(request.getCustomerId());
         order.setProductId(request.getProductId());
         order.setQuantity(request.getQuantity());
-        order.setTotalPrice(BigDecimal.valueOf(request.getQuantity() * 1000));
+        BigDecimal updatedTotalPrice = request.getTotalPrice() != null ? request.getTotalPrice() : BigDecimal.valueOf(request.getQuantity() * 1000);
+        order.setTotalPrice(updatedTotalPrice);
+        order.setName(request.getName());
+        order.setAddress(request.getAddress());
+        order.setPhoneNumber(request.getPhoneNumber());
+        order.setPaymentMethod(request.getPaymentMethod());
+        if (request.getStatus() != null) {
+            order.setStatus(request.getStatus());
+        }
+
+        String paymentStatus = "Payment Pending";
+        if (request.getPaymentMethod() != null) {
+            String method = request.getPaymentMethod().toLowerCase();
+            if (method.contains("upi") || method.contains("card")) {
+                paymentStatus = "Payment Successful";
+            }
+        }
+        order.setPaymentStatus(paymentStatus);
 
         Order updatedOrder = orderRepository.save(order);
 
@@ -93,6 +123,11 @@ public class OrderServiceImpl implements OrderService {
                 .quantity(order.getQuantity())
                 .totalPrice(order.getTotalPrice())
                 .status(order.getStatus())
+                .name(order.getName())
+                .address(order.getAddress())
+                .phoneNumber(order.getPhoneNumber())
+                .paymentMethod(order.getPaymentMethod())
+                .paymentStatus(order.getPaymentStatus())
                 .createdAt(order.getCreatedAt())
                 .updatedAt(order.getUpdatedAt())
                 .build();
